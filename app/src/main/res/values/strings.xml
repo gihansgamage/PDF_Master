@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDF Master</string>
+    <string name="open_pdf">Open PDF</string>
+    <string name="recent_files">Recent Files</string>
+    <string name="no_recent_files">No recent files</string>
+    <string name="permission_denied">Permission denied. Cannot access files.</string>
+    <string name="file_not_found">File not found</string>
+    <string name="share_pdf">Share PDF</string>
+    <string name="reading_aloud">Reading aloud...</string>
+    <string name="highlight_mode">Highlight mode active</string>
+    <string name="drawing_mode">Drawing mode active</string>
+</resources>
