@@ -2,7 +2,8 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -26,13 +27,8 @@
         <com.github.barteksc.pdfviewer.PDFView
             android:id="@+id/pdfView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <com.pdfmaster.reader.DrawingOverlay
-            android:id="@+id/drawing_overlay"
-            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone" />
+            android:background="?android:attr/colorBackground" />
 
     </FrameLayout>
 
@@ -45,31 +41,22 @@
         android:layout_margin="16dp">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_tts"
+            android:id="@+id/fab_bookmark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:src="@drawable/ic_bookmark"
+            app:fabSize="mini"
+            app:backgroundTint="?attr/colorSecondary" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_read_aloud"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:src="@drawable/ic_play"
             app:fabSize="mini"
-            app:backgroundTint="?attr/colorSecondary" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_highlight"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:src="@drawable/ic_highlight"
-            app:fabSize="mini"
-            app:backgroundTint="@color/highlight_color" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_draw"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:src="@drawable/ic_draw"
-            app:fabSize="mini"
-            app:backgroundTint="@color/draw_color" />
+            app:backgroundTint="@color/tts_color" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_share"

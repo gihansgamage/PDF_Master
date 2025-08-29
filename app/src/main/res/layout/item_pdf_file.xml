@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:layout_margin="4dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,6 +19,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/ic_pdf"
+            android:tint="@color/colorPrimary"
             android:layout_marginEnd="16dp" />
 
         <LinearLayout
@@ -49,7 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="?android:attr/textColorTertiary"
+                android:textColor="?android:attr/textColorSecondary"
                 android:layout_marginTop="2dp" />
 
         </LinearLayout>
@@ -59,6 +61,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_more_vert"
+            android:tint="?android:attr/textColorSecondary"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="8dp" />
 
