@@ -49,7 +49,7 @@ public class BookmarksDialog extends DialogFragment {
     private void setupRecyclerView(View view) {
         RecyclerView recyclerView = view.findViewById(R.id.recycler_bookmarks);
         List<BookmarkManager.Bookmark> bookmarks = bookmarkManager.getBookmarks();
-        
+
         BookmarksAdapter adapter = new BookmarksAdapter(bookmarks, bookmark -> {
             if (bookmarkClickListener != null) {
                 bookmarkClickListener.onBookmarkClick(bookmark.getPageNumber());
@@ -74,7 +74,7 @@ public class BookmarksDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_add_bookmark, null);
-        
+
         EditText editTitle = dialogView.findViewById(R.id.edit_bookmark_title);
         editTitle.setText("Page " + (currentPage + 1));
 

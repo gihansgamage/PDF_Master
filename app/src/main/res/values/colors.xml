@@ -8,13 +8,12 @@
     <color name="tts_color">#9C27B0</color>
     <color name="bookmark_color">#FF9800</color>
     <color name="error_color">#F44336</color>
-    <color name="pdf_icon_background">#E3F2FD</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="dark_gray">#424242</color>
-    
+
     <!-- Surface colors for better contrast -->
     <color name="surface_light">#FFFFFF</color>
     <color name="surface_dark">#121212</color>
