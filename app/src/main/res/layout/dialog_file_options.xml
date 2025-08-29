@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Open"
-        android:drawableStart="@drawable/ic_open"
+        android:drawableStart="@drawable/ic_open"a
         android:gravity="start|center_vertical"
         style="?attr/borderlessButtonStyle"
         android:padding="12dp" />
