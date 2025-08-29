@@ -7,14 +7,15 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 
 import com.github.barteksc.pdfviewer.PDFView;
-import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
-import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -26,14 +27,12 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
     private Uri pdfUri;
     private TextToSpeech textToSpeech;
     private boolean isReading = false;
-    private FloatingActionButton fabBookmark, fabReadAloud, fabShare;
+    private FloatingActionButton fabDraw, fabHighlight, fabShare, fabTTS;
     private Toolbar toolbar;
-    private BookmarkManager bookmarkManager;
-    private PDFTextExtractor textExtractor;
+    private DrawingOverlay drawingOverlay;
+    private HighlightManager highlightManager;
     private FileManager fileManager;
     private String currentFileName;
-    private int currentPage = 0;
-    private int totalPages = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +48,11 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
     private void initViews() {
         pdfView = findViewById(R.id.pdfView);
         toolbar = findViewById(R.id.toolbar);
-        fabBookmark = findViewById(R.id.fab_bookmark);
-        fabReadAloud = findViewById(R.id.fab_read_aloud);
+        fabDraw = findViewById(R.id.fab_draw);
+        fabHighlight = findViewById(R.id.fab_highlight);
         fabShare = findViewById(R.id.fab_share);
+        fabTTS = findViewById(R.id.fab_tts);
+        drawingOverlay = findViewById(R.id.drawing_overlay);
     }
 
     private void setupToolbar() {
@@ -64,12 +65,13 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
 
     private void initializeComponents() {
         fileManager = new FileManager(this);
-        textExtractor = new PDFTextExtractor(this);
+        highlightManager = new HighlightManager(this);
         textToSpeech = new TextToSpeech(this, this);
 
-        fabBookmark.setOnClickListener(v -> showBookmarksDialog());
-        fabReadAloud.setOnClickListener(v -> toggleTextToSpeech());
+        fabDraw.setOnClickListener(v -> toggleDrawingMode());
+        fabHighlight.setOnClickListener(v -> toggleHighlightMode());
         fabShare.setOnClickListener(v -> sharePDF());
+        fabTTS.setOnClickListener(v -> toggleTextToSpeech());
     }
 
     private void loadPDF() {
@@ -92,28 +94,7 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
                         .scrollHandle(null)
                         .spacing(0)
                         .pageFitPolicy(FitPolicy.WIDTH)
-                        .onPageChange(new OnPageChangeListener() {
-                            @Override
-                            public void onPageChanged(int page, int pageCount) {
-                                currentPage = page;
-                                totalPages = pageCount;
-                                updateBookmarkIcon();
-                                updateToolbarTitle();
-                            }
-                        })
-                        .onLoad(new OnLoadCompleteListener() {
-                            @Override
-                            public void loadComplete(int nbPages) {
-                                totalPages = nbPages;
-                                updateToolbarTitle();
-                                // Update the file in recent files with page count
-                                updateFilePageCount(nbPages);
-                            }
-                        })
                         .load();
-
-                // Initialize bookmark manager
-                bookmarkManager = new BookmarkManager(this, pdfUri.toString());
 
                 // Add to recent files
                 fileManager.addToRecentFiles(pdfUri, currentFileName);
@@ -132,14 +113,14 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        
+
         if (requestCode == PermissionManager.STORAGE_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted, try loading PDF again
                 loadPDF();
             } else {
-                Toast.makeText(this, "Storage permission is required to view PDF files", 
-                    Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Storage permission is required to view PDF files",
+                        Toast.LENGTH_LONG).show();
                 finish();
             }
         }
@@ -172,40 +153,23 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
         return super.onOptionsItemSelected(item);
     }
 
-    private void showBookmarksDialog() {
-        BookmarksDialog dialog = new BookmarksDialog(bookmarkManager, currentPage, pageNumber -> {
-            pdfView.jumpTo(pageNumber);
-        });
-        dialog.show(getSupportFragmentManager(), "Bookmarks");
-    }
-
-    private void updateBookmarkIcon() {
-        if (bookmarkManager != null) {
-            if (bookmarkManager.isBookmarked(currentPage)) {
-                fabBookmark.setImageResource(R.drawable.ic_bookmark);
-            } else {
-                fabBookmark.setImageResource(R.drawable.ic_bookmark_border);
-            }
+    private void toggleDrawingMode() {
+        if (drawingOverlay.getVisibility() == View.VISIBLE) {
+            drawingOverlay.setVisibility(View.GONE);
+            fabDraw.setImageResource(R.drawable.ic_draw);
         } else {
-            fabBookmark.setImageResource(R.drawable.ic_bookmark_border);
+            drawingOverlay.setVisibility(View.VISIBLE);
+            fabDraw.setImageResource(R.drawable.ic_close);
         }
     }
 
-    private void updateToolbarTitle() {
-        if (getSupportActionBar() != null && totalPages > 0) {
-            String title = currentFileName;
-            if (title.length() > 20) {
-                title = title.substring(0, 17) + "...";
-            }
-            getSupportActionBar().setTitle(title);
-            getSupportActionBar().setSubtitle("Page " + (currentPage + 1) + " of " + totalPages);
-        }
-    }
-
-    private void updateFilePageCount(int pageCount) {
-        // Update the recent files entry with page count information
-        if (pdfUri != null && currentFileName != null) {
-            fileManager.addToRecentFiles(pdfUri, currentFileName, pageCount);
+    private void toggleHighlightMode() {
+        highlightManager.toggleHighlightMode();
+        if (highlightManager.isHighlightMode()) {
+            fabHighlight.setImageResource(R.drawable.ic_close);
+            Toast.makeText(this, "Highlight mode ON", Toast.LENGTH_SHORT).show();
+        } else {
+            fabHighlight.setImageResource(R.drawable.ic_highlight);
         }
     }
 
@@ -226,11 +190,10 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
 
     private void startReading() {
         if (textToSpeech != null) {
-            String textToRead = textExtractor.extractTextFromCurrentView(pdfUri, currentPage);
+            String textToRead = "Reading PDF content..."; // Extract text properly here if needed
             textToSpeech.speak(textToRead, TextToSpeech.QUEUE_FLUSH, null, null);
             isReading = true;
-            fabReadAloud.setImageResource(R.drawable.ic_stop);
-            Toast.makeText(this, "Reading page " + (currentPage + 1), Toast.LENGTH_SHORT).show();
+            fabTTS.setImageResource(R.drawable.ic_stop);
         }
     }
 
@@ -239,7 +202,7 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
             textToSpeech.stop();
         }
         isReading = false;
-        fabReadAloud.setImageResource(R.drawable.ic_play);
+        fabTTS.setImageResource(R.drawable.ic_play);
     }
 
     private void showRenameDialog() {
@@ -276,9 +239,6 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
             int result = textToSpeech.setLanguage(Locale.getDefault());
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Toast.makeText(this, "TTS language not supported", Toast.LENGTH_SHORT).show();
-            } else {
-                // TTS is ready
-                textToSpeech.setSpeechRate(0.8f); // Slightly slower for better comprehension
             }
         }
     }

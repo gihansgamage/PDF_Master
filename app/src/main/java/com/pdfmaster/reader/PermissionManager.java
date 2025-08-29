@@ -17,28 +17,28 @@ public class PermissionManager {
             // Android 13+ doesn't need READ_EXTERNAL_STORAGE for document picker
             return true;
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return ContextCompat.checkSelfPermission(context, 
-                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+            return ContextCompat.checkSelfPermission(context,
+                    Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         }
         return true;
     }
 
     public static void requestStoragePermission(Activity activity) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && 
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+
             ActivityCompat.requestPermissions(activity,
-                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                STORAGE_PERMISSION_REQUEST_CODE);
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    STORAGE_PERMISSION_REQUEST_CODE);
         }
     }
 
     public static boolean shouldShowRequestPermissionRationale(Activity activity) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && 
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+
             return ActivityCompat.shouldShowRequestPermissionRationale(activity,
-                Manifest.permission.READ_EXTERNAL_STORAGE);
+                    Manifest.permission.READ_EXTERNAL_STORAGE);
         }
         return false;
     }
