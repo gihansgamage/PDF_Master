@@ -2,6 +2,7 @@ package com.pdfmaster.reader;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.UriPermission;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.DocumentsContract;
@@ -82,6 +83,29 @@ public class FileManager {
             }
         }
         return result;
+    }
+
+    public boolean hasUriPermission(Uri uri) {
+        try {
+            List<UriPermission> permissions = context.getContentResolver().getPersistedUriPermissions();
+            for (UriPermission permission : permissions) {
+                if (permission.getUri().equals(uri) && permission.isReadPermission()) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isUriAccessible(Uri uri) {
+        try {
+            context.getContentResolver().openInputStream(uri).close();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public boolean renameFile(Uri uri, String newName) {

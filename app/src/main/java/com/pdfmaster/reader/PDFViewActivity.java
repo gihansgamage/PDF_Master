@@ -1,6 +1,7 @@
 package com.pdfmaster.reader;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
@@ -75,6 +77,12 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
     private void loadPDF() {
         pdfUri = getIntent().getData();
         if (pdfUri != null) {
+            // Check permissions before loading PDF
+            if (!PermissionManager.hasStoragePermission(this)) {
+                PermissionManager.requestStoragePermission(this);
+                return;
+            }
+
             currentFileName = fileManager.getFileName(pdfUri);
 
             try {
@@ -99,6 +107,22 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
         } else {
             Toast.makeText(this, "PDF file not found", Toast.LENGTH_SHORT).show();
             finish();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (requestCode == PermissionManager.STORAGE_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, try loading PDF again
+                loadPDF();
+            } else {
+                Toast.makeText(this, "Storage permission is required to view PDF files", 
+                    Toast.LENGTH_LONG).show();
+                finish();
+            }
         }
     }
 

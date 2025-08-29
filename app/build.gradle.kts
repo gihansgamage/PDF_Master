@@ -38,6 +38,11 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
+    // Core AndroidX libraries
+    implementation("androidx.core:core:1.12.0")
+    implementation("androidx.activity:activity:1.8.2")
+    implementation("androidx.fragment:fragment:1.6.2")
+
     // PDF Rendering
     implementation("com.github.mhiew:android-pdf-viewer:3.2.0-beta.3")
 
@@ -46,6 +51,9 @@ dependencies {
 
     // Permissions
     implementation("com.karumi:dexter:6.2.3")
+
+    // Better permission handling
+    implementation("pub.devrel:easypermissions:3.0.0")
 
     // Text-to-Speech is built-in Android
 
