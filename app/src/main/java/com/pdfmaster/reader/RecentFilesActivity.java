@@ -45,7 +45,7 @@ public class RecentFilesActivity extends AppCompatActivity {
 
     private void loadRecentFiles() {
         recentFiles = fileManager.getRecentFiles();
-        
+
         if (adapter == null) {
             adapter = new RecentFilesAdapter(recentFiles, this::onFileClick, this::onFileOptionsClick);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));

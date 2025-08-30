@@ -33,10 +33,10 @@ public class FileManager {
     public void addToRecentFiles(Uri uri, String fileName, int pageCount) {
         try {
             Set<String> recentFiles = new HashSet<>(preferences.getStringSet("files", new HashSet<>()));
-            
+
             // Get file size
             long fileSize = getFileSize(uri);
-            
+
             String fileEntry = uri.toString() + "|" + fileName + "|" + System.currentTimeMillis() + "|" + fileSize + "|" + pageCount;
 
             // Remove if already exists (to update timestamp)
@@ -65,7 +65,7 @@ public class FileManager {
                     }
                     return 0;
                 });
-                
+
                 // Keep only the 20 most recent
                 recentFiles = new HashSet<>(sortedFiles.subList(0, Math.min(20, sortedFiles.size())));
             }
@@ -92,7 +92,7 @@ public class FileManager {
                     int pageCount = Integer.parseInt(parts[4]);
 
                     Uri uri = Uri.parse(uriString);
-                    
+
                     // Check if file is still accessible
                     if (isUriAccessible(uri)) {
                         pdfFiles.add(new PDFFile(fileName, uriString, fileSize, new Date(timestamp), pageCount));
@@ -105,7 +105,7 @@ public class FileManager {
                     String fileName = parts[1];
                     long timestamp = Long.parseLong(parts[2]);
                     long fileSize = Long.parseLong(parts[3]);
-                    
+
                     Uri uri = Uri.parse(uriString);
                     if (isUriAccessible(uri)) {
                         pdfFiles.add(new PDFFile(fileName, uriString, fileSize, new Date(timestamp), 0));
@@ -115,7 +115,7 @@ public class FileManager {
                     String uriString = parts[0];
                     String fileName = parts[1];
                     long timestamp = Long.parseLong(parts[2]);
-                    
+
                     Uri uri = Uri.parse(uriString);
                     if (isUriAccessible(uri)) {
                         long fileSize = getFileSize(uri);

@@ -114,12 +114,12 @@ public class FileOptionsDialog extends DialogFragment {
             // Try to open the parent directory
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setType("resource/folder");
-            
+
             // For content URIs, we can't directly open the folder
             // Instead, open the default file manager
             intent = new Intent(Intent.ACTION_MAIN);
             intent.addCategory(Intent.CATEGORY_APP_FILES);
-            
+
             if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
                 startActivity(intent);
             } else {
@@ -127,7 +127,7 @@ public class FileOptionsDialog extends DialogFragment {
                 intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("*/*");
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                
+
                 if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
                     startActivity(Intent.createChooser(intent, "Open File Manager"));
                 } else {

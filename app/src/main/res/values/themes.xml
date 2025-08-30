@@ -1,54 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme -->
     <style name="Theme.PDFReader" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
+        <!-- Primary brand color -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
+
+        <!-- Secondary brand color -->
         <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorSecondaryVariant">@color/colorAccent</item>
         <item name="colorOnSecondary">@color/white</item>
-        <!-- Surface colors for better contrast -->
+
+        <!-- Surface colors -->
         <item name="colorSurface">@color/white</item>
         <item name="colorOnSurface">@color/black</item>
         <item name="colorSurfaceVariant">#F0F0F0</item>
         <item name="colorOnSurfaceVariant">#424242</item>
-        <!-- Background colors -->
+
+        <!-- Background -->
         <item name="android:colorBackground">@color/light_gray</item>
-        <!-- Status bar color. -->
+        <item name="android:windowBackground">@color/light_gray</item>
+
+        <!-- Status bar -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
-        <!-- Text colors with proper contrast -->
+
+        <!-- Text colors -->
         <item name="android:textColorPrimary">@color/black</item>
         <item name="android:textColorSecondary">#616161</item>
         <item name="android:textColorTertiary">#9E9E9E</item>
-        <!-- Window background -->
-        <item name="android:windowBackground">@color/light_gray</item>
-        <!-- Ensure proper contrast for all text -->
-        <item name="textColorOnSurface">@color/black</item>
-        <item name="textColorOnBackground">@color/black</item>
     </style>
-    
+
     <!-- Dark theme -->
     <style name="Theme.PDFReader.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
         <item name="colorOnPrimary">@color/white</item>
+
         <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorSecondaryVariant">@color/colorAccent</item>
         <item name="colorOnSecondary">@color/white</item>
+
         <item name="colorSurface">#1E1E1E</item>
         <item name="colorOnSurface">@color/white</item>
         <item name="colorSurfaceVariant">#2C2C2C</item>
         <item name="colorOnSurfaceVariant">#E0E0E0</item>
+
         <item name="android:colorBackground">#121212</item>
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <item name="android:windowBackground">#121212</item>
+
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+
+        <!-- Text colors -->
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:textColorSecondary">#E0E0E0</item>
         <item name="android:textColorTertiary">#BDBDBD</item>
-        <item name="textColorOnSurface">@color/white</item>
-        <item name="textColorOnBackground">@color/white</item>
     </style>
 </resources>
