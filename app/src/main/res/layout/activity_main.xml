@@ -69,7 +69,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Open, read, and manage PDF files"
+                android:text="Open, read, and annotate PDF files"
                 android:textSize="16sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:layout_marginBottom="24dp" />
@@ -117,5 +117,27 @@
         android:src="@drawable/ic_history"
         app:tint="@android:color/white"
         app:backgroundTint="?attr/colorSecondary" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_all_bookmarks"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="88dp"
+        android:src="@drawable/ic_bookmark"
+        app:tint="@android:color/white"
+        app:backgroundTint="?attr/colorTertiary" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_favorites"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="88dp"
+        android:src="@drawable/ic_favorite"
+        app:tint="@android:color/white"
+        app:backgroundTint="@color/favorite_color" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

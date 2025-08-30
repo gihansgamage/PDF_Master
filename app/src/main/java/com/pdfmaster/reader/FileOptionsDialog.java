@@ -80,15 +80,48 @@ public class FileOptionsDialog extends DialogFragment {
     }
 
     private void showRenameDialog() {
-        RenameFileDialog dialog = new RenameFileDialog(pdfFile.getName(), newName -> {
-            if (fileManager.renameFile(Uri.parse(pdfFile.getPath()), newName)) {
-                pdfFile.setName(newName);
-                Toast.makeText(getContext(), "File renamed successfully", Toast.LENGTH_SHORT).show();
+        try {
+            if (pdfFile != null && pdfFile.getName() != null && getParentFragmentManager() != null) {
+                RenameFileDialog dialog = RenameFileDialog.newInstance(pdfFile.getName(), newName -> {
+                    try {
+                        if (fileManager != null && newName != null && !newName.trim().isEmpty()) {
+                            Uri fileUri = Uri.parse(pdfFile.getPath());
+                            boolean renameSuccess = fileManager.renameFile(fileUri, newName);
+                            if (renameSuccess) {
+                                String finalName = newName.endsWith(".pdf") ? newName : newName + ".pdf";
+                                pdfFile.setName(finalName);
+                                Toast.makeText(getContext(), "File renamed successfully to: " + finalName, Toast.LENGTH_SHORT).show();
+                            } else {
+                                // Provide more specific error messages based on common failure reasons
+                                String errorMessage = "Failed to rename file. ";
+                                if (!DocumentsContract.isDocumentUri(getContext(), fileUri)) {
+                                    errorMessage += "File location doesn't support renaming.";
+                                } else {
+                                    errorMessage += "Check if file is read-only or in use.";
+                                }
+                                Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
+                                Log.w("FileOptionsDialog", "Rename failed for URI: " + fileUri.toString());
+                            }
+                        } else {
+                            Toast.makeText(getContext(), "Invalid file or name", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e("FileOptionsDialog", "Error during rename operation", e);
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), "Error occurred while renaming: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+                dialog.show(getParentFragmentManager(), "RenameFile");
             } else {
-                Toast.makeText(getContext(), "Failed to rename file", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Cannot rename file at this time", Toast.LENGTH_SHORT).show();
             }
-        });
-        dialog.show(getParentFragmentManager(), "RenameFile");
+        } catch (Exception e) {
+            Log.e("FileOptionsDialog", "Error showing rename dialog", e);
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Error opening rename dialog", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void showDeleteConfirmation() {
@@ -115,43 +148,67 @@ public class FileOptionsDialog extends DialogFragment {
         try {
             Uri uri = Uri.parse(pdfFile.getPath());
 
-            // Try to open the default file manager app
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setType("resource/folder");
+            // Try to open file manager with ACTION_GET_CONTENT to browse files
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("*/*");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
                 startActivity(intent);
-                Toast.makeText(getContext(), "File manager opened - navigate to your PDF location", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Navigate to your PDF file", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Fallback: Try to open Files app specifically
+            // Fallback 1: Try to open Downloads folder directly
             try {
-                Intent filesIntent = new Intent();
-                filesIntent.setAction(Intent.ACTION_VIEW);
-                filesIntent.setData(Uri.parse("content://com.android.externalstorage.documents/root/primary"));
-                filesIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                Intent downloadsIntent = new Intent(Intent.ACTION_VIEW);
+                downloadsIntent.setDataAndType(Uri.parse("content://com.android.externalstorage.documents/document/primary%3ADownload"), "resource/folder");
+                downloadsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                if (filesIntent.resolveActivity(requireContext().getPackageManager()) != null) {
-                    startActivity(filesIntent);
-                    Toast.makeText(getContext(), "Navigate to your file location", Toast.LENGTH_LONG).show();
+                if (downloadsIntent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    startActivity(downloadsIntent);
+                    Toast.makeText(getContext(), "Check Downloads folder for your PDF", Toast.LENGTH_SHORT).show();
                     return;
                 }
             } catch (Exception e) {
-                Log.w("FileOptions", "Could not open Files app", e);
+                Log.w("FileOptions", "Could not open Downloads folder", e);
             }
 
-            // Last fallback: Try to open any file manager by package name
+            // Fallback 2: Open file manager app directly
             try {
-                Intent packageIntent = requireContext().getPackageManager().getLaunchIntentForPackage("com.google.android.documentsui");
-                if (packageIntent != null) {
-                    startActivity(packageIntent);
+                Intent fileManagerIntent = new Intent("android.intent.action.MAIN");
+                fileManagerIntent.addCategory("android.intent.category.APP_FILES");
+                fileManagerIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                if (fileManagerIntent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    startActivity(fileManagerIntent);
                     Toast.makeText(getContext(), "File manager opened", Toast.LENGTH_SHORT).show();
                     return;
                 }
             } catch (Exception e) {
-                Log.w("FileOptions", "Could not open Documents UI", e);
+                Log.w("FileOptions", "Could not open file manager", e);
+            }
+
+            // Fallback 3: Try specific file manager apps
+            String[] fileManagerPackages = {
+                    "com.google.android.documentsui",
+                    "com.android.documentsui",
+                    "com.mi.android.globalFileexplorer",
+                    "com.estrongs.android.pop"
+            };
+
+            for (String packageName : fileManagerPackages) {
+                try {
+                    Intent packageIntent = requireContext().getPackageManager().getLaunchIntentForPackage(packageName);
+                    if (packageIntent != null) {
+                        startActivity(packageIntent);
+                        Toast.makeText(getContext(), "File manager opened", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                } catch (Exception e) {
+                    Log.w("FileOptions", "Could not open " + packageName, e);
+                }
             }
 
             // If all else fails

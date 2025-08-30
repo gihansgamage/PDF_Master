@@ -38,6 +38,8 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
     private BookmarkManager bookmarkManager;
     private PDFTextExtractor textExtractor;
     private FileManager fileManager;
+    private FavoriteManager favoriteManager;
+    private GlobalBookmarkManager globalBookmarkManager;
     private String currentFileName;
     private int currentPage = 0;
     private int totalPages = 0;
@@ -51,6 +53,11 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
         setupToolbar();
         initializeComponents();
         loadPDF();
+
+        int gotoPage = getIntent().getIntExtra("goto_page", -1);
+        if (gotoPage >= 0) {
+            pdfView.jumpTo(gotoPage);
+        }
     }
 
     private void initViews() {
@@ -79,6 +86,8 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
         fileManager = new FileManager(this);
         textExtractor = new PDFTextExtractor(this);
         textToSpeech = new TextToSpeech(this, this);
+        favoriteManager = new FavoriteManager(this);
+        globalBookmarkManager = new GlobalBookmarkManager(this);
 
         fabBookmark.setOnClickListener(v -> showBookmarksDialog());
         fabReadAloud.setOnClickListener(v -> toggleTextToSpeech());
@@ -130,6 +139,8 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
                 // Initialize bookmark manager
                 bookmarkManager = new BookmarkManager(this, pdfUri.toString());
 
+                globalBookmarkManager.registerFile(pdfUri.toString());
+
                 // Add to recent files
                 fileManager.addToRecentFiles(pdfUri, currentFileName);
 
@@ -168,6 +179,17 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem favoriteItem = menu.findItem(R.id.menu_favorite);
+        if (favoriteItem != null && pdfUri != null) {
+            if (favoriteManager.isFavorite(pdfUri.toString())) {
+                favoriteItem.setTitle("Remove from Favorites");
+                favoriteItem.setIcon(R.drawable.ic_favorite_filled);
+            } else {
+                favoriteItem.setTitle("Add to Favorites");
+                favoriteItem.setIcon(R.drawable.ic_favorite_border);
+            }
+        }
+
         // Apply custom styling to menu items for better visibility
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
@@ -195,9 +217,26 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
         } else if (id == R.id.menu_open_location) {
             openFileLocation();
             return true;
+        } else if (id == R.id.menu_favorite) {
+            toggleFavorite();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void toggleFavorite() {
+        if (pdfUri != null && currentFileName != null) {
+            if (favoriteManager.isFavorite(pdfUri.toString())) {
+                favoriteManager.removeFromFavorites(pdfUri.toString());
+                Toast.makeText(this, "Removed from favorites", Toast.LENGTH_SHORT).show();
+            } else {
+                favoriteManager.addToFavorites(pdfUri.toString(), currentFileName);
+                Toast.makeText(this, "Added to favorites", Toast.LENGTH_SHORT).show();
+            }
+            // Refresh menu to update favorite icon
+            invalidateOptionsMenu();
+        }
     }
 
     private void showBookmarksDialog() {
@@ -280,16 +319,37 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
     }
 
     private void showRenameDialog() {
-        RenameFileDialog dialog = new RenameFileDialog(currentFileName, newName -> {
-            if (fileManager.renameFile(pdfUri, newName)) {
-                currentFileName = newName + ".pdf"; // Update with extension
-                updateToolbarTitle(); // Refresh the title display
-                Toast.makeText(this, "File renamed successfully", Toast.LENGTH_SHORT).show();
+        try {
+            if (currentFileName != null && !isFinishing() && !isDestroyed()) {
+                RenameFileDialog dialog = RenameFileDialog.newInstance(currentFileName, newName -> {
+                    try {
+                        if (fileManager != null && pdfUri != null && newName != null && !newName.trim().isEmpty()) {
+                            if (fileManager.renameFile(pdfUri, newName)) {
+                                currentFileName = newName.endsWith(".pdf") ? newName : newName + ".pdf";
+                                updateToolbarTitle();
+                                Toast.makeText(this, "File renamed successfully", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(this, "Rename failed. File may be read-only or provider doesn't support renaming.", Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            Toast.makeText(this, "Invalid file or name", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e("PDFViewActivity", "Error during rename operation", e);
+                        Toast.makeText(this, "Error occurred while renaming file", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                if (getSupportFragmentManager() != null) {
+                    dialog.show(getSupportFragmentManager(), "RenameFile");
+                }
             } else {
-                Toast.makeText(this, "Rename failed. File may be read-only or provider doesn't support renaming.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Cannot rename file at this time", Toast.LENGTH_SHORT).show();
             }
-        });
-        dialog.show(getSupportFragmentManager(), "RenameFile");
+        } catch (Exception e) {
+            Log.e("PDFViewActivity", "Error showing rename dialog", e);
+            Toast.makeText(this, "Error opening rename dialog", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showDeleteConfirmation() {

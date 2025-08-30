@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int PICK_PDF_REQUEST = 1;
 
     private FloatingActionButton fabOpenFile, fabRecentFiles;
+    private FloatingActionButton fabAllBookmarks, fabFavorites;
     private FileManager fileManager;
     private ImageView infoIcon;
     private AdView mAdView;
@@ -81,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         fabOpenFile = findViewById(R.id.fab_open_file);
         fabRecentFiles = findViewById(R.id.fab_recent_files);
+        fabAllBookmarks = findViewById(R.id.fab_all_bookmarks);
+        fabFavorites = findViewById(R.id.fab_favorites);
         infoIcon = findViewById(R.id.info_icon);
         mAdView = findViewById(R.id.adView);
 
@@ -92,6 +95,8 @@ public class MainActivity extends AppCompatActivity {
 
         fabOpenFile.setOnClickListener(v -> openFileChooser());
         fabRecentFiles.setOnClickListener(v -> openRecentFiles());
+        fabAllBookmarks.setOnClickListener(v -> openAllBookmarks());
+        fabFavorites.setOnClickListener(v -> openFavoriteFiles());
         infoIcon.setOnClickListener(v -> showAppInfoDialog());
     }
 
@@ -142,6 +147,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void openRecentFiles() {
         Intent intent = new Intent(this, RecentFilesActivity.class);
+        startActivity(intent);
+    }
+
+    private void openAllBookmarks() {
+        Intent intent = new Intent(this, AllBookmarksActivity.class);
+        startActivity(intent);
+    }
+
+    private void openFavoriteFiles() {
+        Intent intent = new Intent(this, FavoriteFilesActivity.class);
         startActivity(intent);
     }
 

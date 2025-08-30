@@ -210,60 +210,53 @@ public class FileManager {
         try {
             Log.d(TAG, "Attempting to rename file: " + uri.toString() + " to: " + newName);
 
-            // Check if we have write permission first
-            if (!hasWritePermission(uri)) {
-                Log.e(TAG, "No write permission for URI: " + uri.toString());
-                // Try to get persistent permission if possible
-                try {
-                    context.getContentResolver().takePersistableUriPermission(uri,
-                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION |
-                                    android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                } catch (Exception e) {
-                    Log.w(TAG, "Could not take persistable permission", e);
-                }
-
-                // Check again after attempting to get permission
-                if (!hasWritePermission(uri)) {
-                    return false;
-                }
+            // Ensure the new name has .pdf extension if it doesn't already
+            if (!newName.toLowerCase().endsWith(".pdf")) {
+                newName = newName + ".pdf";
             }
 
-            if (DocumentsContract.isDocumentUri(context, uri)) {
-                // Ensure the new name has .pdf extension if it doesn't already
-                if (!newName.toLowerCase().endsWith(".pdf")) {
-                    newName = newName + ".pdf";
-                }
-
-                if (!isValidFileName(newName)) {
-                    Log.e(TAG, "Invalid filename: " + newName);
-                    return false;
-                }
-
-                try {
-                    Uri renamedUri = DocumentsContract.renameDocument(context.getContentResolver(), uri, newName);
-                    if (renamedUri != null) {
-                        // Update the recent files list with the new name
-                        updateRecentFileEntry(uri.toString(), newName);
-                        Log.d(TAG, "Successfully renamed file to: " + newName);
-                        return true;
-                    } else {
-                        Log.e(TAG, "DocumentsContract.renameDocument returned null - provider may not support renaming");
-                        return false;
-                    }
-                } catch (UnsupportedOperationException e) {
-                    Log.e(TAG, "Rename operation not supported by this provider: " + e.getMessage());
-                    return false;
-                } catch (SecurityException e) {
-                    Log.e(TAG, "Security exception - insufficient permissions: " + e.getMessage());
-                    return false;
-                }
-            } else {
-                // For non-document URIs, cannot rename
-                Log.w(TAG, "Cannot rename non-document URI: " + uri.toString());
+            if (!isValidFileName(newName)) {
+                Log.e(TAG, "Invalid filename: " + newName);
                 return false;
             }
+
+            // Check if this is a document URI that supports renaming
+            if (!DocumentsContract.isDocumentUri(context, uri)) {
+                Log.e(TAG, "URI is not a document URI, cannot rename: " + uri.toString());
+                return false;
+            }
+
+            // Check if we have write permission
+            if (!hasWritePermission(uri)) {
+                Log.e(TAG, "No write permission for URI: " + uri.toString());
+                return false;
+            }
+
+            try {
+                // Attempt the rename operation
+                Uri renamedUri = DocumentsContract.renameDocument(context.getContentResolver(), uri, newName);
+                if (renamedUri != null) {
+                    // Update the recent files list with the new name
+                    updateRecentFileEntry(uri.toString(), newName);
+                    Log.d(TAG, "Successfully renamed file to: " + newName);
+                    return true;
+                } else {
+                    Log.e(TAG, "DocumentsContract.renameDocument returned null - rename failed");
+                    return false;
+                }
+            } catch (UnsupportedOperationException e) {
+                Log.e(TAG, "Rename operation not supported by this document provider: " + e.getMessage());
+                return false;
+            } catch (SecurityException e) {
+                Log.e(TAG, "Security exception during rename - insufficient permissions: " + e.getMessage());
+                return false;
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Invalid argument for rename operation: " + e.getMessage());
+                return false;
+            }
+
         } catch (Exception e) {
-            Log.e(TAG, "Unexpected error renaming file: " + e.getMessage(), e);
+            Log.e(TAG, "Unexpected error during rename operation: " + e.getMessage(), e);
             return false;
         }
     }
@@ -273,22 +266,24 @@ public class FileManager {
             List<UriPermission> permissions = context.getContentResolver().getPersistedUriPermissions();
             for (UriPermission permission : permissions) {
                 if (permission.getUri().equals(uri) && permission.isWritePermission()) {
+                    Log.d(TAG, "Found write permission for URI: " + uri.toString());
                     return true;
                 }
             }
 
-            // Also check if we can actually write to the URI
-            try (OutputStream outputStream = context.getContentResolver().openOutputStream(uri)) {
-                if (outputStream != null) {
-                    return true;
-                }
+            // Also try to check if we can get write access by testing
+            try {
+                context.getContentResolver().openOutputStream(uri, "wa");
+                Log.d(TAG, "Write access confirmed by testing output stream");
+                return true;
             } catch (Exception e) {
-                Log.d(TAG, "Cannot open output stream for URI: " + uri.toString());
+                Log.d(TAG, "Cannot open output stream for writing: " + e.getMessage());
             }
 
+            Log.w(TAG, "No write permission found for URI: " + uri.toString());
             return false;
         } catch (Exception e) {
-            Log.e(TAG, "Error checking write permission", e);
+            Log.e(TAG, "Error checking write permission: " + e.getMessage(), e);
             return false;
         }
     }
