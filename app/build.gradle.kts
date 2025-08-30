@@ -4,14 +4,15 @@ plugins {
 
 android {
     namespace = "com.pdfmaster.reader"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.pdfmaster.reader"
-        minSdk = 24
-        targetSdk = 34
+        minSdk = 21
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
