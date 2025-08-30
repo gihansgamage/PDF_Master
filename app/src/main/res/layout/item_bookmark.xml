@@ -20,7 +20,7 @@
             android:layout_height="24dp"
             android:src="@drawable/ic_bookmark"
             android:layout_marginEnd="12dp"
-            android:tint="?attr/colorPrimary" />
+            android:tint="@color/bookmark_color" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -35,14 +35,23 @@
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:textColor="?android:attr/textColorPrimary"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end" />
 
+            Enhanced bookmark details with better layout using existing drawable resources
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="2dp">
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/ic_info"
+                    android:layout_marginEnd="4dp"
+                    android:tint="?android:attr/textColorSecondary" />
 
                 <TextView
                     android:id="@+id/text_bookmark_page"
@@ -57,6 +66,13 @@
                     android:text=" • "
                     android:textSize="12sp"
                     android:textColor="?android:attr/textColorSecondary" />
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/ic_history"
+                    android:layout_marginEnd="4dp"
+                    android:tint="?android:attr/textColorSecondary" />
 
                 <TextView
                     android:id="@+id/text_bookmark_date"

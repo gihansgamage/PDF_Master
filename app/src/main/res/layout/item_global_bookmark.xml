@@ -16,25 +16,58 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/text_bookmark_title"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
-            android:maxLines="2"
-            android:ellipsize="end" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/text_file_name"
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_bookmark"
+                android:layout_marginEnd="8dp"
+                android:tint="@color/bookmark_color" />
+
+            <TextView
+                android:id="@+id/text_bookmark_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+        Enhanced file name display with file icon
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:layout_marginTop="4dp"
-            android:maxLines="1"
-            android:ellipsize="end" />
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_description"
+                android:layout_marginEnd="6dp"
+                android:tint="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:id="@+id/text_file_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="14sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -51,12 +84,28 @@
                 android:textColor="?attr/colorPrimary"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/text_timestamp"
+            Enhanced timestamp with clock icon
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:textColor="?attr/colorOnSurfaceVariant" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/ic_access_time"
+                    android:layout_marginEnd="4dp"
+                    android:tint="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/text_timestamp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

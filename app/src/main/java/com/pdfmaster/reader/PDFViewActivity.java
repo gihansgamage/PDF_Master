@@ -226,7 +226,20 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
     }
 
     private void toggleFavorite() {
-        if (pdfUri != null && currentFileName != null) {
+        if (pdfUri == null) {
+            Toast.makeText(this, "PDF file not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (favoriteManager == null) {
+            favoriteManager = new FavoriteManager(this);
+        }
+
+        if (currentFileName == null || currentFileName.trim().isEmpty()) {
+            currentFileName = fileManager != null ? fileManager.getFileName(pdfUri) : "Unknown File";
+        }
+
+        try {
             if (favoriteManager.isFavorite(pdfUri.toString())) {
                 favoriteManager.removeFromFavorites(pdfUri.toString());
                 Toast.makeText(this, "Removed from favorites", Toast.LENGTH_SHORT).show();
@@ -236,6 +249,9 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
             }
             // Refresh menu to update favorite icon
             invalidateOptionsMenu();
+        } catch (Exception e) {
+            Log.e("PDFViewActivity", "Error toggling favorite", e);
+            Toast.makeText(this, "Error updating favorites", Toast.LENGTH_SHORT).show();
         }
     }
 

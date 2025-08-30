@@ -1,5 +1,6 @@
 package com.pdfmaster.reader;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,8 +35,18 @@ public class AllBookmarksAdapter extends RecyclerView.Adapter<AllBookmarksAdapte
 
     @Override
     public void onBindViewHolder(@NonNull BookmarkViewHolder holder, int position) {
-        GlobalBookmarkManager.GlobalBookmark bookmark = bookmarks.get(position);
-        holder.bind(bookmark, listener);
+        try {
+            GlobalBookmarkManager.GlobalBookmark bookmark = bookmarks.get(position);
+            if (bookmark == null) {
+                Log.w("AllBookmarksAdapter", "Bookmark at position " + position + " is null");
+                return;
+            }
+            Log.d("AllBookmarksAdapter", "Binding bookmark: title=" + bookmark.getTitle() +
+                    ", fileName=" + bookmark.getFileName() + ", page=" + bookmark.getPageNumber());
+            holder.bind(bookmark, listener);
+        } catch (Exception e) {
+            Log.e("AllBookmarksAdapter", "Error binding bookmark at position " + position, e);
+        }
     }
 
     @Override
@@ -58,18 +69,82 @@ public class AllBookmarksAdapter extends RecyclerView.Adapter<AllBookmarksAdapte
         }
 
         public void bind(GlobalBookmarkManager.GlobalBookmark bookmark, OnBookmarkClickListener listener) {
-            titleText.setText(bookmark.getTitle());
-            fileNameText.setText(bookmark.getFileName());
-            pageText.setText("Page " + bookmark.getPageNumber());
-
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
-            timestampText.setText(sdf.format(new Date(bookmark.getTimestamp())));
-
-            itemView.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onBookmarkClick(bookmark);
+            try {
+                if (bookmark == null) {
+                    Log.w("BookmarkViewHolder", "Bookmark object is null");
+                    return;
                 }
-            });
+
+                if (titleText != null) {
+                    String fileName = bookmark.getFileName();
+                    if (fileName == null || fileName.trim().isEmpty()) {
+                        fileName = "Unknown PDF File";
+                    } else {
+                        // Extract just the filename without path
+                        if (fileName.contains("/")) {
+                            fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+                        }
+                        // Remove file extension for cleaner display
+                        if (fileName.toLowerCase().endsWith(".pdf")) {
+                            fileName = fileName.substring(0, fileName.length() - 4);
+                        }
+                        // Truncate long filenames
+                        if (fileName.length() > 25) {
+                            fileName = fileName.substring(0, 22) + "...";
+                        }
+                    }
+                    titleText.setText(fileName);
+                    Log.d("BookmarkViewHolder", "Set title: " + fileName);
+                }
+
+                if (fileNameText != null) {
+                    String bookmarkTitle = bookmark.getTitle();
+                    if (bookmarkTitle == null || bookmarkTitle.trim().isEmpty()) {
+                        fileNameText.setText("Bookmark in this document");
+                    } else {
+                        fileNameText.setText(bookmarkTitle);
+                    }
+                    Log.d("BookmarkViewHolder", "Set bookmark description");
+                }
+
+                if (pageText != null) {
+                    int pageNum = bookmark.getPageNumber();
+                    pageText.setText("Page " + (pageNum + 1));
+                    Log.d("BookmarkViewHolder", "Set page: " + (pageNum + 1));
+                }
+
+                if (timestampText != null) {
+                    try {
+                        long timestamp = bookmark.getTimestamp();
+                        if (timestamp > 0) {
+                            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
+                            timestampText.setText(sdf.format(new Date(timestamp)));
+                        } else {
+                            timestampText.setText("Recently added");
+                        }
+                        Log.d("BookmarkViewHolder", "Set timestamp: " + timestamp);
+                    } catch (Exception e) {
+                        timestampText.setText("Recently added");
+                        Log.w("BookmarkViewHolder", "Error formatting timestamp", e);
+                    }
+                }
+
+                if (itemView != null) {
+                    itemView.setOnClickListener(v -> {
+                        try {
+                            if (listener != null && bookmark != null) {
+                                Log.d("BookmarkViewHolder", "Bookmark clicked: " + bookmark.getTitle());
+                                listener.onBookmarkClick(bookmark);
+                            }
+                        } catch (Exception e) {
+                            Log.e("BookmarkViewHolder", "Error in bookmark click", e);
+                        }
+                    });
+                }
+
+            } catch (Exception e) {
+                Log.e("BookmarkViewHolder", "Error binding bookmark data", e);
+            }
         }
     }
 }

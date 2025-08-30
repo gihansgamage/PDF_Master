@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
+    Moved favorite to top and made it always visible
     <item
         android:id="@+id/menu_favorite"
         android:title="Add to Favorites"
         android:icon="@drawable/ic_favorite_border"
-        app:showAsAction="never"
+        app:showAsAction="always"
         android:titleCondensed="Favorite" />
 
     <item
