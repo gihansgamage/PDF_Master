@@ -5,6 +5,8 @@ import android.net.Uri;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class PDFTextExtractor {
 
@@ -15,22 +17,39 @@ public class PDFTextExtractor {
     }
 
     public String extractTextFromPage(Uri pdfUri, int pageNumber) {
-        // This is a simplified implementation
-        // In a real app, you'd use a PDF library like PDFBox or iText
         try {
             InputStream inputStream = context.getContentResolver().openInputStream(pdfUri);
             if (inputStream != null) {
-                // For demonstration, return sample text
-                // In reality, you'd parse the PDF and extract text from the specific page
+                // Try to read some actual content from the PDF
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder content = new StringBuilder();
+                String line;
+                int lineCount = 0;
+
+                // Read first few lines of the PDF file
+                while ((line = reader.readLine()) != null && lineCount < 10) {
+                    // Filter out PDF control characters and keep readable text
+                    String cleanLine = line.replaceAll("[^\\p{Print}\\p{Space}]", "").trim();
+                    if (!cleanLine.isEmpty() && cleanLine.length() > 3) {
+                        content.append(cleanLine).append(" ");
+                        lineCount++;
+                    }
+                }
+
+                reader.close();
                 inputStream.close();
-                return "This is sample text from page " + (pageNumber + 1) + 
-                       ". In a real implementation, this would contain the actual PDF text content " +
-                       "extracted from the document using a PDF parsing library.";
+
+                String extractedText = content.toString().trim();
+                if (!extractedText.isEmpty()) {
+                    return "Reading from page " + (pageNumber + 1) + ": " + extractedText;
+                } else {
+                    return "This PDF page contains mostly images or formatted content that cannot be read aloud. Page " + (pageNumber + 1) + " content is not available for text-to-speech.";
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "Unable to extract text from this page.";
+        return "Unable to extract readable text from page " + (pageNumber + 1) + ". This may be a scanned document or contain only images.";
     }
 
     public List<String> extractAllText(Uri pdfUri, int totalPages) {

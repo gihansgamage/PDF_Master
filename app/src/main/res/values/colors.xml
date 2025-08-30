@@ -14,10 +14,15 @@
     <color name="black">#000000</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="dark_gray">#424242</color>
-    
+
     <!-- Surface colors for better contrast -->
     <color name="surface_light">#FFFFFF</color>
     <color name="surface_dark">#121212</color>
     <color name="on_surface_light">#000000</color>
     <color name="on_surface_dark">#FFFFFF</color>
+
+    <!-- Added colors for advertisement display area -->
+    <color name="ad_background">#F0F0F0</color>
+    <color name="ad_text">#FF6B35</color>
+    <color name="ad_text_secondary">#666666</color>
 </resources>

@@ -9,8 +9,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -21,9 +19,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int PICK_PDF_REQUEST = 1;
 
-    private RecyclerView recyclerView;
-    private RecentFilesAdapter adapter;
-    private List<PDFFile> recentFiles;
     private FloatingActionButton fabOpenFile, fabRecentFiles;
     private FileManager fileManager;
 
@@ -41,10 +36,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         initViews();
-        setupRecyclerView();
 
         fileManager = new FileManager(this);
-        loadRecentFiles();
     }
 
     private void handleIncomingIntent() {
@@ -71,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        recyclerView = findViewById(R.id.recyclerView);
         fabOpenFile = findViewById(R.id.fab_open_file);
         fabRecentFiles = findViewById(R.id.fab_recent_files);
 
@@ -84,13 +76,6 @@ public class MainActivity extends AppCompatActivity {
 
         fabOpenFile.setOnClickListener(v -> openFileChooser());
         fabRecentFiles.setOnClickListener(v -> openRecentFiles());
-    }
-
-    private void setupRecyclerView() {
-        recentFiles = new ArrayList<>();
-        adapter = new RecentFilesAdapter(recentFiles, this::onFileClick, this::onFileOptionsClick);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
     }
 
     /** Open PDF using Storage Access Framework (SAF) */
@@ -156,27 +141,8 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void loadRecentFiles() {
-        recentFiles.clear();
-        recentFiles.addAll(fileManager.getRecentFiles());
-        if (adapter != null) {
-            adapter.updateFiles(recentFiles);
-        }
-    }
-
-    private void onFileClick(PDFFile pdfFile) {
-        Uri uri = Uri.parse(pdfFile.getPath());
-        openPDFViewer(uri);
-    }
-
-    private void onFileOptionsClick(PDFFile pdfFile) {
-        FileOptionsDialog dialog = new FileOptionsDialog(pdfFile, fileManager);
-        dialog.show(getSupportFragmentManager(), "FileOptions");
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        loadRecentFiles();
     }
 }
