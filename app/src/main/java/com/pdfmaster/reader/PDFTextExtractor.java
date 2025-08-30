@@ -23,9 +23,9 @@ public class PDFTextExtractor {
                 // For demonstration, return sample text
                 // In reality, you'd parse the PDF and extract text from the specific page
                 inputStream.close();
-                return "This is sample text from page " + (pageNumber + 1) +
-                        ". In a real implementation, this would contain the actual PDF text content " +
-                        "extracted from the document using a PDF parsing library.";
+                return "This is sample text from page " + (pageNumber + 1) + 
+                       ". In a real implementation, this would contain the actual PDF text content " +
+                       "extracted from the document using a PDF parsing library.";
             }
         } catch (Exception e) {
             e.printStackTrace();

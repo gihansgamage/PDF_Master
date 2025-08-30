@@ -26,9 +26,9 @@ public class BookmarksAdapter extends RecyclerView.Adapter<BookmarksAdapter.View
         void onBookmarkDelete(BookmarkManager.Bookmark bookmark);
     }
 
-    public BookmarksAdapter(List<BookmarkManager.Bookmark> bookmarks,
-                            OnBookmarkClickListener clickListener,
-                            OnBookmarkDeleteListener deleteListener) {
+    public BookmarksAdapter(List<BookmarkManager.Bookmark> bookmarks, 
+                           OnBookmarkClickListener clickListener,
+                           OnBookmarkDeleteListener deleteListener) {
         this.bookmarks = bookmarks;
         this.clickListener = clickListener;
         this.deleteListener = deleteListener;

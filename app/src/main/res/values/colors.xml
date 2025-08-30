@@ -14,7 +14,7 @@
     <color name="black">#000000</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="dark_gray">#424242</color>
-
+    
     <!-- Surface colors for better contrast -->
     <color name="surface_light">#FFFFFF</color>
     <color name="surface_dark">#121212</color>
