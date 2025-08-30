@@ -9,6 +9,7 @@ import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -207,14 +208,89 @@ public class FileManager {
 
     public boolean renameFile(Uri uri, String newName) {
         try {
+            Log.d(TAG, "Attempting to rename file: " + uri.toString() + " to: " + newName);
+
+            // Check if we have write permission first
+            if (!hasWritePermission(uri)) {
+                Log.e(TAG, "No write permission for URI: " + uri.toString());
+                // Try to get persistent permission if possible
+                try {
+                    context.getContentResolver().takePersistableUriPermission(uri,
+                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                                    android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                } catch (Exception e) {
+                    Log.w(TAG, "Could not take persistable permission", e);
+                }
+
+                // Check again after attempting to get permission
+                if (!hasWritePermission(uri)) {
+                    return false;
+                }
+            }
+
             if (DocumentsContract.isDocumentUri(context, uri)) {
-                Uri renamedUri = DocumentsContract.renameDocument(context.getContentResolver(), uri, newName);
-                return renamedUri != null;
+                // Ensure the new name has .pdf extension if it doesn't already
+                if (!newName.toLowerCase().endsWith(".pdf")) {
+                    newName = newName + ".pdf";
+                }
+
+                if (!isValidFileName(newName)) {
+                    Log.e(TAG, "Invalid filename: " + newName);
+                    return false;
+                }
+
+                try {
+                    Uri renamedUri = DocumentsContract.renameDocument(context.getContentResolver(), uri, newName);
+                    if (renamedUri != null) {
+                        // Update the recent files list with the new name
+                        updateRecentFileEntry(uri.toString(), newName);
+                        Log.d(TAG, "Successfully renamed file to: " + newName);
+                        return true;
+                    } else {
+                        Log.e(TAG, "DocumentsContract.renameDocument returned null - provider may not support renaming");
+                        return false;
+                    }
+                } catch (UnsupportedOperationException e) {
+                    Log.e(TAG, "Rename operation not supported by this provider: " + e.getMessage());
+                    return false;
+                } catch (SecurityException e) {
+                    Log.e(TAG, "Security exception - insufficient permissions: " + e.getMessage());
+                    return false;
+                }
+            } else {
+                // For non-document URIs, cannot rename
+                Log.w(TAG, "Cannot rename non-document URI: " + uri.toString());
+                return false;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error renaming file", e);
+            Log.e(TAG, "Unexpected error renaming file: " + e.getMessage(), e);
+            return false;
         }
-        return false;
+    }
+
+    private boolean hasWritePermission(Uri uri) {
+        try {
+            List<UriPermission> permissions = context.getContentResolver().getPersistedUriPermissions();
+            for (UriPermission permission : permissions) {
+                if (permission.getUri().equals(uri) && permission.isWritePermission()) {
+                    return true;
+                }
+            }
+
+            // Also check if we can actually write to the URI
+            try (OutputStream outputStream = context.getContentResolver().openOutputStream(uri)) {
+                if (outputStream != null) {
+                    return true;
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "Cannot open output stream for URI: " + uri.toString());
+            }
+
+            return false;
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking write permission", e);
+            return false;
+        }
     }
 
     public boolean deleteFile(Uri uri) {
@@ -235,8 +311,23 @@ public class FileManager {
     public void removeFromRecentFiles(String filePath) {
         try {
             Set<String> recentFiles = new HashSet<>(preferences.getStringSet("files", new HashSet<>()));
-            recentFiles.removeIf(entry -> entry.startsWith(filePath + "|"));
-            preferences.edit().putStringSet("files", recentFiles).apply();
+            Set<String> updatedFiles = new HashSet<>();
+
+            for (String entry : recentFiles) {
+                String[] parts = entry.split("\\|");
+                if (parts.length >= 2 && parts[0].equals(filePath)) {
+                    // Update the entry with new name
+                    String updatedEntry = parts[0] + "|" + parts[1];
+                    for (int i = 2; i < parts.length; i++) {
+                        updatedEntry += "|" + parts[i];
+                    }
+                    updatedFiles.add(updatedEntry);
+                } else {
+                    updatedFiles.add(entry);
+                }
+            }
+
+            preferences.edit().putStringSet("files", updatedFiles).apply();
             Log.d(TAG, "Removed file from recent files: " + filePath);
         } catch (Exception e) {
             Log.e(TAG, "Error removing file from recent files", e);
@@ -246,5 +337,45 @@ public class FileManager {
     public void clearRecentFiles() {
         preferences.edit().remove("files").apply();
         Log.d(TAG, "Cleared all recent files");
+    }
+
+    private void updateRecentFileEntry(String oldUri, String newName) {
+        try {
+            Set<String> recentFiles = new HashSet<>(preferences.getStringSet("files", new HashSet<>()));
+            Set<String> updatedFiles = new HashSet<>();
+
+            for (String entry : recentFiles) {
+                String[] parts = entry.split("\\|");
+                if (parts.length >= 2 && parts[0].equals(oldUri)) {
+                    // Update the entry with new name
+                    String updatedEntry = parts[0] + "|" + newName;
+                    for (int i = 2; i < parts.length; i++) {
+                        updatedEntry += "|" + parts[i];
+                    }
+                    updatedFiles.add(updatedEntry);
+                } else {
+                    updatedFiles.add(entry);
+                }
+            }
+
+            preferences.edit().putStringSet("files", updatedFiles).apply();
+            Log.d(TAG, "Updated recent file entry with new name: " + newName);
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating recent file entry", e);
+        }
+    }
+
+    private boolean isValidFileName(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return false;
+        }
+        // Check for invalid characters
+        String invalidChars = "/\\:*?\"<>|";
+        for (char c : invalidChars.toCharArray()) {
+            if (fileName.indexOf(c) >= 0) {
+                return false;
+            }
+        }
+        return true;
     }
 }

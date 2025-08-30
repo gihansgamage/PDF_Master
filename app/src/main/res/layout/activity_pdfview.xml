@@ -32,8 +32,20 @@
 
     </FrameLayout>
 
-    <!-- Action buttons -->
+    Added toggle button for showing/hiding action buttons
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_toggle_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_visibility"
+        app:fabSize="mini"
+        app:backgroundTint="?attr/colorPrimary" />
+
+    Wrapped action buttons in LinearLayout with ID for show/hide functionality
     <LinearLayout
+        android:id="@+id/action_buttons_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"

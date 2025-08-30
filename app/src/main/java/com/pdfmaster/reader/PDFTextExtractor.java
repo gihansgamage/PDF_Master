@@ -2,14 +2,14 @@ package com.pdfmaster.reader;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 public class PDFTextExtractor {
 
+    private static final String TAG = "PDFTextExtractor";
     private Context context;
 
     public PDFTextExtractor(Context context) {
@@ -20,36 +20,63 @@ public class PDFTextExtractor {
         try {
             InputStream inputStream = context.getContentResolver().openInputStream(pdfUri);
             if (inputStream != null) {
-                // Try to read some actual content from the PDF
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                StringBuilder content = new StringBuilder();
-                String line;
-                int lineCount = 0;
+                // Note: This is a basic implementation. For proper PDF text extraction,
+                // you would need a PDF library like Apache PDFBox or iText
 
-                // Read first few lines of the PDF file
-                while ((line = reader.readLine()) != null && lineCount < 10) {
-                    // Filter out PDF control characters and keep readable text
-                    String cleanLine = line.replaceAll("[^\\p{Print}\\p{Space}]", "").trim();
-                    if (!cleanLine.isEmpty() && cleanLine.length() > 3) {
-                        content.append(cleanLine).append(" ");
-                        lineCount++;
+                byte[] buffer = new byte[1024];
+                StringBuilder content = new StringBuilder();
+                int bytesRead;
+                int totalBytesRead = 0;
+
+                // Read some bytes from the PDF to check if it contains readable text
+                while ((bytesRead = inputStream.read(buffer)) != -1 && totalBytesRead < 4096) {
+                    String chunk = new String(buffer, 0, bytesRead, "UTF-8");
+                    // Look for readable text patterns in PDF
+                    String cleanChunk = extractReadableText(chunk);
+                    if (!cleanChunk.isEmpty()) {
+                        content.append(cleanChunk).append(" ");
                     }
+                    totalBytesRead += bytesRead;
                 }
 
-                reader.close();
                 inputStream.close();
 
                 String extractedText = content.toString().trim();
-                if (!extractedText.isEmpty()) {
+                if (extractedText.length() > 20) {
+                    // Limit text length for TTS
+                    if (extractedText.length() > 500) {
+                        extractedText = extractedText.substring(0, 500) + "...";
+                    }
                     return "Reading from page " + (pageNumber + 1) + ": " + extractedText;
                 } else {
-                    return "This PDF page contains mostly images or formatted content that cannot be read aloud. Page " + (pageNumber + 1) + " content is not available for text-to-speech.";
+                    return getDefaultPageText(pageNumber);
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error extracting text from PDF", e);
         }
-        return "Unable to extract readable text from page " + (pageNumber + 1) + ". This may be a scanned document or contain only images.";
+        return getDefaultPageText(pageNumber);
+    }
+
+    private String extractReadableText(String rawText) {
+        StringBuilder readable = new StringBuilder();
+        String[] words = rawText.split("\\s+");
+
+        for (String word : words) {
+            // Filter out PDF control sequences and keep readable words
+            String cleanWord = word.replaceAll("[^\\p{L}\\p{N}\\p{P}\\s]", "").trim();
+            if (cleanWord.length() > 2 && cleanWord.matches(".*[a-zA-Z].*")) {
+                readable.append(cleanWord).append(" ");
+            }
+        }
+
+        return readable.toString().trim();
+    }
+
+    private String getDefaultPageText(int pageNumber) {
+        return "This is page " + (pageNumber + 1) + " of your PDF document. " +
+                "The text content cannot be extracted for reading aloud. " +
+                "This may be because the PDF contains images, scanned content, or is password protected.";
     }
 
     public List<String> extractAllText(Uri pdfUri, int totalPages) {

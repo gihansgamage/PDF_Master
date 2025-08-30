@@ -3,8 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:background="?attr/colorSurface">
 
+    Enhanced app info dialog with better styling and proper IDs
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -24,11 +26,38 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Version:"
+            android:text="App Name:"
             android:textSize="16sp"
+            android:textStyle="bold"
             android:textColor="?attr/colorOnSurface" />
 
         <TextView
+            android:id="@+id/tv_app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PDF Master"
+            android:textSize="16sp"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Version:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/tv_version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="1.0.0"
@@ -49,39 +78,44 @@
             android:layout_weight="1"
             android:text="Developer:"
             android:textSize="16sp"
+            android:textStyle="bold"
             android:textColor="?attr/colorOnSurface" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tv_developer"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Gihan S Gamage"
+            android:layout_weight="1.5"
+            android:text="Gihan S Gamage🖤"
             android:textSize="16sp"
-            android:textColor="?attr/colorOnSurfaceVariant" />
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:gravity="end" />
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_marginBottom="20dp">
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="Description:"
             android:textSize="16sp"
-            android:textColor="?attr/colorOnSurface" />
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            android:layout_marginBottom="4dp" />
 
         <TextView
-            android:layout_width="0dp"
+            android:id="@+id/tv_description"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="Open, read, and annotate PDF files"
-            android:textSize="16sp"
+            android:text="Open, read, and annotate PDF files with ease. Features include bookmarking, text-to-speech, and file management."
+            android:textSize="14sp"
             android:textColor="?attr/colorOnSurfaceVariant"
-            android:gravity="end" />
+            android:lineSpacingExtra="2dp" />
 
     </LinearLayout>
 

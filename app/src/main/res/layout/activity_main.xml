@@ -69,7 +69,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Open, read, and annotate PDF files"
+                android:text="Open, read, and manage PDF files"
                 android:textSize="16sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:layout_marginBottom="24dp" />
