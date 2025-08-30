@@ -110,12 +110,32 @@ public class FileOptionsDialog extends DialogFragment {
     }
 
     private void openFileLocation() {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.parse(pdfFile.getPath()), "resource/folder");
-        if (intent.resolveActivityInfo(requireContext().getPackageManager(), 0) != null) {
-            startActivity(intent);
-        } else {
-            Toast.makeText(getContext(), "No file manager found", Toast.LENGTH_SHORT).show();
+        try {
+            // Try to open the parent directory
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setType("resource/folder");
+            
+            // For content URIs, we can't directly open the folder
+            // Instead, open the default file manager
+            intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_APP_FILES);
+            
+            if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
+                startActivity(intent);
+            } else {
+                // Fallback: try to open any file manager
+                intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                
+                if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    startActivity(Intent.createChooser(intent, "Open File Manager"));
+                } else {
+                    Toast.makeText(getContext(), "No file manager found", Toast.LENGTH_SHORT).show();
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "Unable to open file location", Toast.LENGTH_SHORT).show();
         }
     }
 }

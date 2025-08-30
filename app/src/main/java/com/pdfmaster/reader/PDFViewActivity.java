@@ -103,7 +103,7 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
                         })
                         .onLoad(new OnLoadCompleteListener() {
                             @Override
-                            public void onLoadComplete(int nbPages) {
+                            public void loadComplete(int nbPages) {
                                 totalPages = nbPages;
                                 updateToolbarTitle();
                                 // Update the file in recent files with page count
