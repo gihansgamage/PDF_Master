@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +21,7 @@ import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import android.provider.DocumentsContract;
 
 import java.util.Locale;
 
@@ -59,6 +61,10 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
         fabShare = findViewById(R.id.fab_share);
         fabToggleControls = findViewById(R.id.fab_toggle_controls);
         actionButtonsContainer = findViewById(R.id.action_buttons_container);
+
+        fabToggleControls.setAlpha(0.4f);
+        fabToggleControls.setScaleX(0.7f);
+        fabToggleControls.setScaleY(0.7f);
     }
 
     private void setupToolbar() {
@@ -195,10 +201,19 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
     }
 
     private void showBookmarksDialog() {
-        BookmarksDialog dialog = new BookmarksDialog(bookmarkManager, currentPage, pageNumber -> {
-            pdfView.jumpTo(pageNumber);
-        });
-        dialog.show(getSupportFragmentManager(), "Bookmarks");
+        try {
+            if (bookmarkManager != null && pdfUri != null) {
+                BookmarksDialog dialog = BookmarksDialog.newInstance(pdfUri.toString(), currentPage, pageNumber -> {
+                    pdfView.jumpTo(pageNumber);
+                });
+                dialog.show(getSupportFragmentManager(), "Bookmarks");
+            } else {
+                Toast.makeText(this, "Bookmark manager not initialized", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e("PDFViewActivity", "Error showing bookmarks dialog", e);
+            Toast.makeText(this, "Failed to open bookmarks", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateBookmarkIcon() {
@@ -290,7 +305,65 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
     }
 
     private void openFileLocation() {
-        Toast.makeText(this, "Opening file location not supported on Android 11+", Toast.LENGTH_SHORT).show();
+        try {
+            if (pdfUri != null) {
+                if (DocumentsContract.isDocumentUri(this, pdfUri)) {
+                    String documentId = DocumentsContract.getDocumentId(pdfUri);
+
+                    // Handle different document providers
+                    if (pdfUri.getAuthority().contains("downloads")) {
+                        // Open Downloads folder
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setType("resource/folder");
+                        intent.setData(Uri.parse("content://com.android.providers.downloads.documents/tree/downloads"));
+
+                        if (intent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(intent);
+                            return;
+                        }
+                    } else if (pdfUri.getAuthority().contains("externalstorage")) {
+                        // Try to open parent directory for external storage
+                        try {
+                            String[] parts = documentId.split(":");
+                            if (parts.length > 1) {
+                                String path = parts[1];
+                                int lastSlash = path.lastIndexOf('/');
+                                if (lastSlash > 0) {
+                                    String parentPath = path.substring(0, lastSlash);
+                                    String treeId = parts[0] + ":" + parentPath;
+                                    Uri treeUri = DocumentsContract.buildTreeDocumentUri(pdfUri.getAuthority(), treeId);
+
+                                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                                    intent.setData(treeUri);
+                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                                    if (intent.resolveActivity(getPackageManager()) != null) {
+                                        startActivity(intent);
+                                        return;
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.w("PDFView", "Could not open parent folder", e);
+                        }
+                    }
+                }
+
+                // Fallback: Open file manager
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                    Toast.makeText(this, "Navigate to your file location", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(this, "No file manager available", Toast.LENGTH_SHORT).show();
+                }
+            }
+        } catch (Exception e) {
+            Log.e("PDFView", "Error opening file location", e);
+            Toast.makeText(this, "Unable to open file location", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void toggleActionButtons() {
@@ -298,12 +371,14 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
             // Hide buttons
             actionButtonsContainer.setVisibility(View.GONE);
             fabToggleControls.setImageResource(R.drawable.ic_visibility_off);
+            fabToggleControls.setAlpha(0.6f);
             buttonsVisible = false;
             Toast.makeText(this, "Controls hidden", Toast.LENGTH_SHORT).show();
         } else {
             // Show buttons
             actionButtonsContainer.setVisibility(View.VISIBLE);
             fabToggleControls.setImageResource(R.drawable.ic_visibility);
+            fabToggleControls.setAlpha(0.4f);
             buttonsVisible = true;
             Toast.makeText(this, "Controls visible", Toast.LENGTH_SHORT).show();
         }

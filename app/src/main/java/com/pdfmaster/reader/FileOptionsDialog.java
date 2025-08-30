@@ -5,12 +5,14 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import android.provider.DocumentsContract;
 
 public class FileOptionsDialog extends DialogFragment {
 
@@ -111,30 +113,52 @@ public class FileOptionsDialog extends DialogFragment {
 
     private void openFileLocation() {
         try {
-            // Try to open the parent directory
+            Uri uri = Uri.parse(pdfFile.getPath());
+
+            // Try to open the default file manager app
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setType("resource/folder");
-
-            // For content URIs, we can't directly open the folder
-            // Instead, open the default file manager
-            intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_APP_FILES);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
                 startActivity(intent);
-            } else {
-                // Fallback: try to open any file manager
-                intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("*/*");
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-
-                if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
-                    startActivity(Intent.createChooser(intent, "Open File Manager"));
-                } else {
-                    Toast.makeText(getContext(), "No file manager found", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(getContext(), "File manager opened - navigate to your PDF location", Toast.LENGTH_LONG).show();
+                return;
             }
+
+            // Fallback: Try to open Files app specifically
+            try {
+                Intent filesIntent = new Intent();
+                filesIntent.setAction(Intent.ACTION_VIEW);
+                filesIntent.setData(Uri.parse("content://com.android.externalstorage.documents/root/primary"));
+                filesIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                if (filesIntent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    startActivity(filesIntent);
+                    Toast.makeText(getContext(), "Navigate to your file location", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            } catch (Exception e) {
+                Log.w("FileOptions", "Could not open Files app", e);
+            }
+
+            // Last fallback: Try to open any file manager by package name
+            try {
+                Intent packageIntent = requireContext().getPackageManager().getLaunchIntentForPackage("com.google.android.documentsui");
+                if (packageIntent != null) {
+                    startActivity(packageIntent);
+                    Toast.makeText(getContext(), "File manager opened", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            } catch (Exception e) {
+                Log.w("FileOptions", "Could not open Documents UI", e);
+            }
+
+            // If all else fails
+            Toast.makeText(getContext(), "No file manager found. Please install a file manager app.", Toast.LENGTH_LONG).show();
+
         } catch (Exception e) {
+            Log.e("FileOptions", "Error opening file location", e);
             Toast.makeText(getContext(), "Unable to open file location", Toast.LENGTH_SHORT).show();
         }
     }
