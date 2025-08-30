@@ -103,15 +103,15 @@ public class FavoriteFilesAdapter extends RecyclerView.Adapter<FavoriteFilesAdap
                     if (fileName != null && fileName.length() > 30) {
                         fileName = fileName.substring(0, 27) + "...";
                     }
-                    fileNameText.setText("📄 " + (fileName != null ? fileName : "Unknown File"));
+                    fileNameText.setText(fileName != null ? fileName : "Unknown File");
                 }
 
                 if (timestampText != null) {
                     try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("📅 Added on MMM dd, yyyy HH:mm", Locale.getDefault());
+                        SimpleDateFormat sdf = new SimpleDateFormat("Added on MMM dd, yyyy HH:mm", Locale.getDefault());
                         timestampText.setText(sdf.format(new Date(favorite.getTimestamp())));
                     } catch (Exception e) {
-                        timestampText.setText("📅 Recently added");
+                        timestampText.setText("Recently added");
                         Log.w("FavoriteViewHolder", "Error formatting timestamp", e);
                     }
                 }

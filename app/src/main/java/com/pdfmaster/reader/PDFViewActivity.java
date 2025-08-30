@@ -190,14 +190,6 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
             }
         }
 
-        // Apply custom styling to menu items for better visibility
-        for (int i = 0; i < menu.size(); i++) {
-            MenuItem item = menu.getItem(i);
-            if (item != null) {
-                // Force white background and black text for menu items
-                item.getIcon();
-            }
-        }
         return super.onPrepareOptionsMenu(menu);
     }
 

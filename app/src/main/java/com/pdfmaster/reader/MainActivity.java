@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.AdRequest;
@@ -29,8 +30,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int PICK_PDF_REQUEST = 1;
 
-    private FloatingActionButton fabOpenFile, fabRecentFiles;
-    private FloatingActionButton fabAllBookmarks, fabFavorites;
+    private MaterialCardView cardOpenFile, cardRecentFiles;
+    private MaterialCardView cardBookmarks, cardFavorites;
     private FileManager fileManager;
     private ImageView infoIcon;
     private AdView mAdView;
@@ -80,10 +81,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        fabOpenFile = findViewById(R.id.fab_open_file);
-        fabRecentFiles = findViewById(R.id.fab_recent_files);
-        fabAllBookmarks = findViewById(R.id.fab_all_bookmarks);
-        fabFavorites = findViewById(R.id.fab_favorites);
+        cardOpenFile = findViewById(R.id.card_open_file);
+        cardRecentFiles = findViewById(R.id.card_recent_files);
+        cardBookmarks = findViewById(R.id.card_bookmarks);
+        cardFavorites = findViewById(R.id.card_favorites);
         infoIcon = findViewById(R.id.info_icon);
         mAdView = findViewById(R.id.adView);
 
@@ -93,10 +94,10 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("PDF Master");
         }
 
-        fabOpenFile.setOnClickListener(v -> openFileChooser());
-        fabRecentFiles.setOnClickListener(v -> openRecentFiles());
-        fabAllBookmarks.setOnClickListener(v -> openAllBookmarks());
-        fabFavorites.setOnClickListener(v -> openFavoriteFiles());
+        cardOpenFile.setOnClickListener(v -> openFileChooser());
+        cardRecentFiles.setOnClickListener(v -> openRecentFiles());
+        cardBookmarks.setOnClickListener(v -> openAllBookmarks());
+        cardFavorites.setOnClickListener(v -> openFavoriteFiles());
         infoIcon.setOnClickListener(v -> showAppInfoDialog());
     }
 
