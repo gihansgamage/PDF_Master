@@ -5,12 +5,22 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
+import android.widget.ImageView;
+import androidx.appcompat.app.AlertDialog;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,21 +31,28 @@ public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton fabOpenFile, fabRecentFiles;
     private FileManager fileManager;
+    private ImageView infoIcon;
+    private AdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Handle intent from other apps
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            }
+        });
+
         handleIncomingIntent();
 
-        // Check and request permissions
         if (!PermissionManager.hasStoragePermission(this)) {
             PermissionManager.requestStoragePermission(this);
         }
 
         initViews();
+        loadAds();
 
         fileManager = new FileManager(this);
     }
@@ -48,9 +65,7 @@ public class MainActivity extends AppCompatActivity {
         if (Intent.ACTION_VIEW.equals(action) && "application/pdf".equals(type)) {
             Uri pdfUri = intent.getData();
             if (pdfUri != null) {
-                // Check permissions first
                 if (!PermissionManager.hasStoragePermission(this)) {
-                    // Store the URI to open after permission is granted
                     getSharedPreferences("temp", MODE_PRIVATE)
                             .edit()
                             .putString("pending_pdf_uri", pdfUri.toString())
@@ -66,8 +81,9 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         fabOpenFile = findViewById(R.id.fab_open_file);
         fabRecentFiles = findViewById(R.id.fab_recent_files);
+        infoIcon = findViewById(R.id.info_icon);
+        mAdView = findViewById(R.id.adView);
 
-        // Setup toolbar
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -76,9 +92,23 @@ public class MainActivity extends AppCompatActivity {
 
         fabOpenFile.setOnClickListener(v -> openFileChooser());
         fabRecentFiles.setOnClickListener(v -> openRecentFiles());
+        infoIcon.setOnClickListener(v -> showAppInfoDialog());
     }
 
-    /** Open PDF using Storage Access Framework (SAF) */
+    private void showAppInfoDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_app_info, null);
+
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+
+        Button closeButton = dialogView.findViewById(R.id.btn_close);
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
     private void openFileChooser() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType("application/pdf");
@@ -94,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
 
-                // Check if there's a pending PDF to open
                 String pendingUri = getSharedPreferences("temp", MODE_PRIVATE)
                         .getString("pending_pdf_uri", null);
                 if (pendingUri != null) {
@@ -123,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == PICK_PDF_REQUEST && resultCode == RESULT_OK && data != null) {
             Uri pdfUri = data.getData();
             if (pdfUri != null) {
-                // Take persistable permission to reopen file later
                 getContentResolver().takePersistableUriPermission(
                         pdfUri,
                         Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -141,8 +169,32 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void loadAds() {
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        if (mAdView != null) {
+            mAdView.resume();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (mAdView != null) {
+            mAdView.pause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mAdView != null) {
+            mAdView.destroy();
+        }
+        super.onDestroy();
     }
 }

@@ -13,7 +13,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -56,6 +55,8 @@ dependencies {
 
     // Better permission handling
     implementation("pub.devrel:easypermissions:3.0.0")
+
+    implementation("com.google.android.gms:play-services-ads:22.6.0")
 
     // Text-to-Speech is built-in Android
 
