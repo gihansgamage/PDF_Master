@@ -51,14 +51,21 @@ public class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.
         return files.size();
     }
 
+    public void updateFiles(List<PDFFile> newFiles) {
+        this.files.clear();
+        this.files.addAll(newFiles);
+        notifyDataSetChanged();
+    }
+
     class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView textFileName, textFileSize, textFileDate;
+        private TextView textFileName, textFileSize, textFilePages, textFileDate;
         private ImageButton buttonOptions;
 
         ViewHolder(View itemView) {
             super(itemView);
             textFileName = itemView.findViewById(R.id.text_file_name);
             textFileSize = itemView.findViewById(R.id.text_file_size);
+            textFilePages = itemView.findViewById(R.id.text_file_pages);
             textFileDate = itemView.findViewById(R.id.text_file_date);
             buttonOptions = itemView.findViewById(R.id.button_options);
         }
@@ -66,9 +73,10 @@ public class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.
         void bind(PDFFile file) {
             textFileName.setText(file.getName());
             textFileSize.setText(file.getFormattedSize());
+            textFilePages.setText(file.getPageInfo());
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-            textFileDate.setText(dateFormat.format(file.getLastModified()));
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy 'at' HH:mm", Locale.getDefault());
+            textFileDate.setText("Opened " + dateFormat.format(file.getLastModified()));
 
             itemView.setOnClickListener(v -> {
                 if (fileClickListener != null) {

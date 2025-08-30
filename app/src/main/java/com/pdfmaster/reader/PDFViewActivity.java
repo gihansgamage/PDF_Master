@@ -14,6 +14,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
+import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -97,6 +98,16 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
                                 currentPage = page;
                                 totalPages = pageCount;
                                 updateBookmarkIcon();
+                                updateToolbarTitle();
+                            }
+                        })
+                        .onLoad(new OnLoadCompleteListener() {
+                            @Override
+                            public void onLoadComplete(int nbPages) {
+                                totalPages = nbPages;
+                                updateToolbarTitle();
+                                // Update the file in recent files with page count
+                                updateFilePageCount(nbPages);
                             }
                         })
                         .load();
@@ -177,6 +188,24 @@ public class PDFViewActivity extends AppCompatActivity implements TextToSpeech.O
             }
         } else {
             fabBookmark.setImageResource(R.drawable.ic_bookmark_border);
+        }
+    }
+
+    private void updateToolbarTitle() {
+        if (getSupportActionBar() != null && totalPages > 0) {
+            String title = currentFileName;
+            if (title.length() > 20) {
+                title = title.substring(0, 17) + "...";
+            }
+            getSupportActionBar().setTitle(title);
+            getSupportActionBar().setSubtitle("Page " + (currentPage + 1) + " of " + totalPages);
+        }
+    }
+
+    private void updateFilePageCount(int pageCount) {
+        // Update the recent files entry with page count information
+        if (pdfUri != null && currentFileName != null) {
+            fileManager.addToRecentFiles(pdfUri, currentFileName, pageCount);
         }
     }
 

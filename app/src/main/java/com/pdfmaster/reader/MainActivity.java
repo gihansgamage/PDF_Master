@@ -115,7 +115,9 @@ public class MainActivity extends AppCompatActivity {
     private void loadRecentFiles() {
         recentFiles.clear();
         recentFiles.addAll(fileManager.getRecentFiles());
-        adapter.notifyDataSetChanged();
+        if (adapter != null) {
+            adapter.updateFiles(recentFiles);
+        }
     }
 
     private void onFileClick(PDFFile pdfFile) {

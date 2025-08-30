@@ -45,9 +45,14 @@ public class RecentFilesActivity extends AppCompatActivity {
 
     private void loadRecentFiles() {
         recentFiles = fileManager.getRecentFiles();
-        adapter = new RecentFilesAdapter(recentFiles, this::onFileClick, this::onFileOptionsClick);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
+        
+        if (adapter == null) {
+            adapter = new RecentFilesAdapter(recentFiles, this::onFileClick, this::onFileOptionsClick);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            recyclerView.setAdapter(adapter);
+        } else {
+            adapter.updateFiles(recentFiles);
+        }
     }
 
     private void onFileClick(PDFFile pdfFile) {
